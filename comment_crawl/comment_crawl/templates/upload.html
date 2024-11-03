@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload</title>
+</head>
+<body>
+    <h1>Upload a File</h1>
+    <form id="uploadForm">
+        <input type="file" id="fileInput" name="file" required>
+        <button type="submit">Upload</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('uploadForm').onsubmit = async function(event) {
+            event.preventDefault(); // 阻止表单提交的默认行为
+
+            // 获取文件对象
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            // 构建FormData对象
+            const formData = new FormData();
+            formData.append("file", file);
+
+            // 使用fetch发送POST请求到FastAPI
+            const response = await fetch('/file/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            // 获取响应数据
+            const result = await response.json();
+            document.getElementById('result').innerText = `File uploaded: ${result.filename}`;
+        };
+    </script>
+</body>
+</html>

@@ -48,11 +48,6 @@ class WayfairSpider(BaseSpider):
 
 
     def parse_response_data(self, response_data, uuid, product_id, is_first_time):
-        # ----------------------------------------------------#
-        # debug here
-        self.write_to_log(response_data, product_id, self.platform_id)
-        # debug here
-        # ----------------------------------------------------#
         customer_reviews = response_data['data']['product']['customerReviews']
         reviews = customer_reviews['reviews']
         ratingCount = customer_reviews['ratingCount']
@@ -118,8 +113,15 @@ class WayfairSpider(BaseSpider):
         loader.add_value('review_unhelpful_count', review.get('reviewUnhelpful', 0))
 
         # 多值字段的处理
+        loader.add_value('product_photos_thumbnail', ','.join([photo['thumbnail'] for photo in review.get('customerPhotos', [])]))
         loader.add_value('product_photos', ','.join([photo['src'] for photo in review.get('customerPhotos', [])]))
         loader.add_value('product_options',
                          ','.join([f"{option['name']}:{option['value']}" for option in review.get('options', [])]))
+
+
+        # 不存在的字段
+        loader.add_value('product_videos','')
+        loader.add_value('reviewer_id', '')
+        loader.add_value('is_recommended', 0)
 
 

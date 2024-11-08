@@ -36,6 +36,7 @@ insert_reviews_sql = text(f'''
         platform_id,
         product_id,
         reviewer_name,
+        reviewer_id,
         is_verified,
         verified_type,
         review_date,
@@ -44,9 +45,12 @@ insert_reviews_sql = text(f'''
         product_comments_content,
         language_code,
         reviewer_location,
-        helpful_count,
-        unhelpful_count,
+        is_recommended,
+        review_helpful_count,
+        review_unhelpful_count,
         product_photos,
+        product_photos_thumbnail,
+        product_videos,
         product_options,
         update_time
     ) VALUES (
@@ -54,6 +58,7 @@ insert_reviews_sql = text(f'''
         :platform_id,
         :product_id,
         :reviewer_name,
+        :reviewer_id,
         :is_verified,
         :verified_type,
         :review_date,
@@ -62,14 +67,18 @@ insert_reviews_sql = text(f'''
         :product_comments_content,
         :language_code,
         :reviewer_location,
+        :is_recommended,
         :review_helpful_count,
         :review_unhelpful_count,
         :product_photos,
+        :product_photos_thumbnail,
+        :product_videos,
         :product_options,
         :update_time
     )
     ON DUPLICATE KEY UPDATE
         reviewer_name = VALUES(reviewer_name),
+        reviewer_id = VALUES(reviewer_id),
         is_verified = VALUES(is_verified),
         verified_type = VALUES(verified_type),
         review_date = VALUES(review_date),
@@ -78,12 +87,16 @@ insert_reviews_sql = text(f'''
         product_comments_content = VALUES(product_comments_content),
         language_code = VALUES(language_code),
         reviewer_location = VALUES(reviewer_location),
-        helpful_count = VALUES(helpful_count),
-        unhelpful_count = VALUES(unhelpful_count),
+        is_recommended = VALUES(is_recommended),
+        review_helpful_count = VALUES(review_helpful_count),
+        review_unhelpful_count = VALUES(review_unhelpful_count),
         product_photos = VALUES(product_photos),
+        product_photos_thumbnail = VALUES(product_photos_thumbnail),
+        product_videos = VALUES(product_videos),
         product_options = VALUES(product_options),
         update_time = VALUES(update_time)
 ''')
+
 
 # 虚拟移动端用户访问agent
 def get_fake_mobile_user_agent():

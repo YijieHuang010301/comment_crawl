@@ -1,0 +1,46 @@
+CREATE TABLE IF NOT EXISTS all_products (
+    id VARCHAR(255) PRIMARY KEY,
+    PlatformId VARCHAR(255),
+    PlatformName VARCHAR(255),
+    ProductId VARCHAR(255),
+    ProductUrl TEXT,
+    StoreProductSku VARCHAR(255),
+    ECProductSku VARCHAR(255),
+    IsDelete INT,
+    ImportTime DATETIME,
+    UpdateTime DATETIME,
+    RatingCount INT,
+    AverageRatingValue DECIMAL(3,2),
+    Rating_5_Count INT,
+    Rating_4_Count INT,
+    Rating_3_Count INT,
+    Rating_2_Count INT,
+    Rating_1_Count INT
+);
+DROP table all_products;
+
+DROP table product_reviews;
+CREATE TABLE product_reviews (
+    review_id VARCHAR(255) NOT NULL,
+    platform_id INT NOT NULL,
+    product_id VARCHAR(255) NOT NULL,
+    reviewer_name VARCHAR(255),
+    reviewer_id VARCHAR(255),
+    is_verified BOOLEAN,
+    verified_type VARCHAR(255),
+    review_date DATE,
+    rating_stars INT,
+    product_comments_title VARCHAR(255),
+    product_comments_content TEXT,
+    language_code VARCHAR(10),
+    reviewer_location VARCHAR(255),
+    is_recommended BOOLEAN,
+    review_helpful_count INT,
+    review_unhelpful_count INT,
+    product_photos TEXT,  -- JSON or serialized array of photo URLs
+    product_photos_thumbnail TEXT,  -- JSON or serialized array of thumbnail URLs
+    product_videos TEXT,  -- JSON or serialized array of video URLs
+    product_options TEXT,  -- JSON or serialized array of product options
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (review_id, platform_id)
+);

@@ -78,7 +78,8 @@ class HomeDepotSpider(BaseSpider):
 
     def populate_review_loader(self, loader, review):
         loader.add_value('review_id', review.get('Id'))
-        loader.add_value('reviewer_name', review.get('AuthorId'))
+        loader.add_value('reviewer_id', review.get('AuthorId'))
+        loader.add_value('reviewer_name', review.get('UserNickname'))
         loader.add_value('platform_id', self.platform_id)
 
         badges = review.get("BadgesOrder") or []
@@ -99,22 +100,29 @@ class HomeDepotSpider(BaseSpider):
         loader.add_value('product_comments_title', review.get('Title') or '')
         loader.add_value('product_comments_content', review.get('ReviewText') or '')
 
-
+        loader.add_value('is_recommended', review.get("IsRecommended") or False)
         reviewer_location = review.get('UserLocation') or ''
         loader.add_value('reviewer_location', reviewer_location)
         loader.add_value('review_helpful_count', review.get('TotalPositiveFeedbackCount', 0))
         loader.add_value('review_unhelpful_count', review.get('TotalNegativeFeedbackCount', 0))
 
-        product_photos = review.get('Photos') or []
+        Videos = review.get("Videos") or ''
+        loader.add_value('product_videos', Videos)
+
+        product_photos = review.get('Photos') or ''
+
+
         loader.add_value('product_photos', ','.join(
             [photo.get('Sizes', {}).get('normal', {}).get('Url', '') for photo in product_photos if 'Sizes' in photo]
         ))
+        loader.add_value('product_photos_thumbnail', ','.join(
+            [photo.get('Sizes', {}).get('thumbnail', {}).get('Url', '') for photo in product_photos if 'Sizes' in photo]
+        ))
 
 
-        # 暂时没有product_options和language code
+        # 不存在的字段: 暂时没有product_options和language code
         loader.add_value('language_code', review.get('LanguageCode', ''))
-        product_options = ''
-        loader.add_value('product_options', product_options)
+        loader.add_value('product_options', '')
 
 
 

@@ -1,8 +1,6 @@
 import os
 import aiofiles
-import redis
-import uvicorn
-from sqlalchemy import create_engine
+
 from fastapi import FastAPI, File, UploadFile, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -10,11 +8,24 @@ from fastapi.responses import JSONResponse
 from fastapi.responses import HTMLResponse
 
 from comment_crawl.common.const import WAYFAIR_PLATFORM_ID, HOMEDEPOT_PLATFORM_ID
+from comment_crawl.util.crawl_util.push_to_redis import push_urls_to_redis_by_platform
 from comment_crawl.util.process_input import InputProcessor
 
-from comment_crawl.util.crawl_util.push_to_redis import push_urls_to_redis_by_platform
+from sqlalchemy import create_engine
 from comment_crawl.util.db_conn import build_db_info
+import redis
 
+# Redis连接
+redis_conn = redis.StrictRedis(host='localhost', port=6379, db=0)
+
+"""
+echo: 当设置为True时会将orm语句转化为sql语句打印，一般debug的时候可用
+pool_size: 连接池的大小，默认为5个，设置为0时表示连接无限制
+pool_recycle: 设置时间以限制数据库多久没连接自动断开
+"""
+DB_INFO = build_db_info()
+print("connecting to: ",DB_INFO.get('mysql').get('tidb_from_url'))
+g_mysql = create_engine(DB_INFO.get('mysql').get('tidb_from_url'), pool_size=8, pool_recycle=60 * 30)
 
 app = FastAPI()
 
@@ -25,11 +36,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-# Redis连接
-redis_conn = redis.StrictRedis(host='localhost', port=6379, db=0)
-
 
 @app.get("/")
 def read_root():
@@ -80,32 +86,23 @@ async def process_file(file_location):
     file_processor = InputProcessor(file_location)
     file_processor.run()
 
-"""
-echo: 当设置为True时会将orm语句转化为sql语句打印，一般debug的时候可用
-pool_size: 连接池的大小，默认为5个，设置为0时表示连接无限制
-pool_recycle: 设置时间以限制数据库多久没连接自动断开
-"""
 
-DB_INFO = build_db_info()
-print("connecting to: ",DB_INFO.get('mysql').get('tidb_from_url'))
-g_mysql = create_engine(DB_INFO.get('mysql').get('tidb_from_url'), pool_size=8, pool_recycle=60 * 30)
 def process_file_test(file_location):
     print("start process file")
     file_processor = InputProcessor(file_location)
     file_processor.run()
 
 if __name__ == '__main__':
-    pass
+
     # uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
     # process_file_test("downloads/files/wf_test.xlsx")
     # process_file_test("downloads/files/Lowes_test.xlsx")
     # process_file_test("downloads/files/homedepot_test.xlsx")
     # process_file_test("downloads/files/amazon_test.xlsx")
     # process_file_test("downloads/files/walmart_test.xlsx")
-    # redis_conn = redis.StrictRedis(host='localhost', port=6379, db=0)
+
     # push_urls_to_redis_by_platform(WAYFAIR_PLATFORM_ID)
     # push_urls_to_redis_by_platform(HOMEDEPOT_PLATFORM_ID)
-
+    pass
     # 定时任务：每天一次
     #schedule.every().days.do(push_urls_to_redis)
-

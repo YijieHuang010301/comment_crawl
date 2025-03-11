@@ -27,7 +27,10 @@ comment_crawl/        # 爬虫包
 ├── spiders/          # 爬虫目录
 │   ├── myspider.py           # 爬虫父类
 │   ├── homedepot_spider.py   # homedepot 爬虫
-│   └── wayfair_spider.py     # wayfair 爬虫
+│   ├── wayfair_spider.py     # wayfair 爬虫
+│   ├── lowes_spider.py       # lowe's 爬虫
+│   ├── amazon_spider.py       # amazon 爬虫*(未启用)
+│   └── walmart_spider.py       # walmart 爬虫*(未完成)
 ├── templates/        # 简单前端（未启用）
 ├── util/             # 常用工具方法
 │   ├── crawl_util/        # 爬虫常用方法

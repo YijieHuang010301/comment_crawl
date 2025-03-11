@@ -6,20 +6,20 @@ from comment_crawl.util.db_conn import select_data_from_db_by_platform
 
 class HeaderFactory:
     @staticmethod
-    def build_header(platform_id, product_id, uuid, is_first_time, start_idx, total_reviews):
+    def build_header(platform_id, product_id, uuid, is_first_time, start_idx, total_reviews, **kwargs):
         if platform_id == WAYFAIR_PLATFORM_ID:
             return HeaderFactory.build_wayfair_header(product_id, uuid, is_first_time, total_reviews)
         elif platform_id == HOMEDEPOT_PLATFORM_ID:
             return HeaderFactory.build_homedepot_header(product_id, uuid, is_first_time, start_idx, total_reviews)
         elif platform_id == AMAZON_PLATFORM_ID:
-            return HeaderFactory.build_amazon_header(product_id, uuid)
+            return HeaderFactory.build_amazon_header(product_id, uuid, is_first_time, start_idx, **kwargs)
         elif platform_id == WALMART_PLATFORM_ID:
             return HeaderFactory.build_walmart_header(product_id, uuid)
         elif platform_id == OVERSTOCK_PLATFORM_ID or platform_id == BEDBATHANDBEYOND_PLATFORM_ID:
             # 共享构建方法
             return HeaderFactory.build_overstock_bedbathandbeyond_header(product_id, uuid)
         elif platform_id == LOWES_PLATFORM_ID:
-            return HeaderFactory.build_lowes_header(product_id, uuid)
+            return HeaderFactory.build_lowes_header(product_id, uuid, is_first_time, start_idx)
         else:
             raise ValueError(f"Unsupported platform_id: {platform_id}")
 
@@ -112,14 +112,55 @@ class HeaderFactory:
         return json.dumps(data)
 
     @staticmethod
-    def build_amazon_header(product_id, uuid):
+    def build_amazon_header(product_id, uuid, is_first_time, page_num, **kwargs):
         # TODO: 实现Amazon的header构建逻辑
-        pass
+        url = f'https://www.amazon.com/product-reviews/{product_id}'
+
+        if not is_first_time:
+            sorted_by = kwargs.get("sortedBy", "recent")
+            filtering = kwargs.get("filtering", "all_stars")
+            url += f'/ref=cm_cr_arp_mb_viewopt_srt?sortBy={sorted_by}&filterByStar={filtering}&pageNumber={page_num}'
+
+        data = {
+            'url': url,
+            'product_id': product_id,
+            'uuid': uuid,
+            'is_first_time': is_first_time,
+        }
+        return json.dumps(data)
 
     @staticmethod
-    def build_walmart_header(product_id, uuid):
-        # TODO: 实现Walmart的header构建逻辑
-        pass
+    def build_lowes_header(product_id, uuid, is_first_time, start_idx):
+        # TODO: 实现lowes的header构建逻辑
+        url = f'https://www.lowes.com/rnr/r/get-by-product/{product_id}'
+
+        headers = {
+            'accept': 'application/json, text/plain, */*',
+            'accept-language': 'zh-CN,zh;q=0.9,zh-TW;q=0.8',
+            'priority': 'u=1, i',
+            'referer': '',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-site': 'same-origin',
+            'user-agent': get_fake_user_agent(),
+        }
+
+        offset = (start_idx - 1) * 10
+
+        # payload = {
+        #     'offset': str(offset),
+        #     'sortBy': 'newestFirst',
+        # }
+        url += f'?offset={offset}&sortBy=newestFirst'
+
+        data = {
+            'url': url,
+            'product_id': product_id,
+            'uuid': uuid,
+            'headers': headers,
+            'is_first_time': is_first_time,
+        }
+        return json.dumps(data)
 
     @staticmethod
     def build_overstock_bedbathandbeyond_header(product_id, uuid):
@@ -127,8 +168,8 @@ class HeaderFactory:
         pass
 
     @staticmethod
-    def build_lowes_header(product_id, uuid):
-        # TODO: 实现Lowes的header构建逻辑
+    def build_walmart_header(product_id, uuid):
+        # TODO: 实现walmart的header构建逻辑
         pass
 
 def push_urls_to_redis_by_platform(platform_id):
@@ -146,14 +187,14 @@ def push_urls_to_redis_by_platform(platform_id):
         redis_conn.lpush(redis_key, data)
         print(f'[First Time] Pushed product: {product_id} to Redis')
 
-def push_retry_url_to_redis(platform_id, product_id, uuid, start_idx, total_reviews):
+def push_retry_url_to_redis(platform_id, product_id, uuid, start_idx, total_reviews, **kwargs):
     from comment_crawl.main import redis_conn
     """
     将需要重试的URL推入Redis
     """
     is_first_time = False
     redis_key = platform_redis_key_map.get(platform_id)
-    data = HeaderFactory.build_header(platform_id, product_id, uuid, is_first_time, start_idx, total_reviews)
+    data = HeaderFactory.build_header(platform_id, product_id, uuid, is_first_time, start_idx, total_reviews, **kwargs)
     redis_conn.lpush(redis_key, data)
     print(f'[Retry] Pushed product: {product_id} to Redis')
 

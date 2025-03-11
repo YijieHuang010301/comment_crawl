@@ -3,6 +3,8 @@ import os
 import random
 from abc import abstractmethod
 from datetime import datetime
+
+from scrapy.spidermiddlewares.httperror import HttpError
 from scrapy_redis.spiders import RedisSpider
 from fake_useragent import UserAgent
 from sqlalchemy import text
@@ -117,7 +119,12 @@ def get_fake_mobile_user_agent():
 # 虚拟用户访问agent
 def get_fake_user_agent():
     ua = UserAgent()
-    return ua.random
+    possible_desktop_ua = [
+        ua.chrome,
+        ua.firefox,
+        ua.safari,
+    ]
+    return random.choice(possible_desktop_ua)
 
 
 class BaseSpider(RedisSpider):
@@ -134,20 +141,9 @@ class BaseSpider(RedisSpider):
         product_id = response.meta.get('product_id')
         is_first_time = response.meta.get('is_first_time')
 
-        # 如果访问失败，设置is_delete属性为1(true)
-        if response.status != 200:
-            print(f"delete {product_id}")
-            self.set_isDelete(uuid)
-            return
-
-        try:
-            response_data = json.loads(response.text)  # 确保解析 JSON
-        except json.JSONDecodeError as e:
-            print(f"Error parsing JSON response for product ID {product_id}: {str(e)}")
-            return
-
         # 调用子类，处理解析后的数据
-        self.parse_response_data(response_data, uuid, product_id, is_first_time)
+
+        self.parse_response_data(response, uuid, product_id, is_first_time)
 
 
     @abstractmethod
@@ -158,38 +154,44 @@ class BaseSpider(RedisSpider):
         pass
 
     @abstractmethod
-    def read_data_from_db(self):
-        raise NotImplementedError("Subclasses must implement the read_data_from_db method.")
-
-    @abstractmethod
     def save_rating_info(self, product_id, uuid, customer_reviews_stats):
         raise NotImplementedError("Subclasses must implement the save_rating_info method.")
 
     def save_reviews(self, product_id, reviews):
         parsed_reviews = []
-
+        print(product_id)
         for review in reviews:
             loader = ItemLoader(item=ReviewItem())
+            # 调用子类实现的填充方法
+            is_success = self.populate_review_loader(loader, review)
+
+            if not is_success:
+                print(f"Error processing review: {review}")
+                continue
+
+
             loader.add_value('product_id', product_id)
             loader.add_value('update_time', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-
-            # 调用子类实现的填充方法
-            self.populate_review_loader(loader, review)
 
             # 将加载后的 ReviewItem 添加到列表
             parsed_reviews.append(loader.load_item())
 
         # 保存到数据库
-        rows, error = execute_sql(insert_reviews_sql, DB_UPDATE, params=parsed_reviews)
-        if error:
-            print(f"Error occurred: {error}")
-        else:
-            print(f"Updated {rows} rows comment successfully for ProductId {product_id}.")
+
+        if len(parsed_reviews) != 0:
+            self.write_to_log(parsed_reviews, product_id, -1)
+            rows, error = execute_sql(insert_reviews_sql, DB_UPDATE, params=parsed_reviews)
+            if error:
+                print(f"Error occurred: {error}")
+            else:
+                # TODO: 需要细化，如果为更新会产生两条数据 delete + insert，是否后期需要判断？
+                print(f"Updated {rows} rows comment successfully for ProductId {product_id}.")
 
     @abstractmethod
-    def populate_review_loader(self, loader, review):
+    def populate_review_loader(self, loader, review) -> bool:
         """
         子类需要实现此方法，将特定的 review 字段填充到 loader 中。
+        返回False表示有错误跳过
         """
         pass
 
@@ -234,9 +236,9 @@ class BaseSpider(RedisSpider):
         # ------ debug ------
         # 定义日志文件名
         log_file = f"comment_crawl/log/{platform_id}.log"
-        if os.path.exists(log_file):
-            os.remove(log_file)
-            self.logger.info(f"Previous log file {log_file} deleted.")
+        # if os.path.exists(log_file):
+        #     os.remove(log_file)
+        #     self.logger.info(f"Previous log file {log_file} deleted.")
         # 写入文件，将 response.text 写入日志文件
         with open(log_file, 'a', encoding='utf-8') as f:
             f.write(f"Response for product ID {product_id}:\n")
@@ -246,5 +248,15 @@ class BaseSpider(RedisSpider):
         # 打印日志位置
         self.logger.info(f"Response saved to {log_file}")
         pass
+
+    def handle_error(self, failure):
+        request = failure.request
+        is_first_time = request.meta.get('is_first_time')
+        if failure.check(HttpError):
+            if is_first_time:
+                self.set_isDelete(request.meta.get('uuid'))
+            response = failure.value.response
+            print(f"HTTP Error {response.status} for URL: {response.url}")
+
 
 

@@ -43,11 +43,19 @@ class WayfairSpider(BaseSpider):
             body=json.dumps(payload),  # 使用 body 传递 JSON 数据
             callback=self.parse,  # 回调函数处理响应
             meta={'product_id': product_id, 'uuid': uuid, 'is_first_time': is_first_time},  # 可选：将 product_id 传递给下一个方法
-            dont_filter=True
+            dont_filter=True,
+            errback = self.handle_error
         )
 
 
-    def parse_response_data(self, response_data, uuid, product_id, is_first_time):
+    def parse_response_data(self, response, uuid, product_id, is_first_time):
+        # 解析json
+        try:
+            response_data = json.loads(response.text)  # 确保解析 JSON
+        except json.JSONDecodeError as e:
+            print(f"Error parsing JSON response for product ID {product_id}: {str(e)}")
+            return
+
         customer_reviews = response_data['data']['product']['customerReviews']
         reviews = customer_reviews['reviews']
         ratingCount = customer_reviews['ratingCount']
@@ -123,5 +131,6 @@ class WayfairSpider(BaseSpider):
         loader.add_value('product_videos','')
         loader.add_value('reviewer_id', '')
         loader.add_value('is_recommended', 0)
+        return True
 
 

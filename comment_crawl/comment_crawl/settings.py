@@ -17,7 +17,7 @@ NEWSPIDER_MODULE = "comment_crawl.spiders"
 #USER_AGENT = "comment_crawl (+http://www.yourdomain.com)"
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+# ROBOTSTXT_OBEY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
@@ -106,11 +106,16 @@ REDIS_PORT = 6379
 # 持久化调度队列，避免中断后任务丢失
 SCHEDULER_PERSIST = True
 
+
 # 设置并发请求数
-CONCURRENT_REQUESTS = 16
+CONCURRENT_REQUESTS = 1
 
 # 禁用Scrapy的内置去重机制，启用scrapy-redis的去重机制
 DUPEFILTER_DEBUG = True
 
 # 设置日志级别为DEBUG以便于调试
 LOG_LEVEL = 'DEBUG'
+
+
+# 配置 Redis 主机和端口
+REDIS_URL = "redis://127.0.0.1:6379"

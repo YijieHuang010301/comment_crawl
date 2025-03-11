@@ -1,13 +1,19 @@
-### 启动scrapydweb
+### 上传scrapy项目
 terminal 1:
-scrapydweb -p 5001 
+scrapyd 
 
 terminal 2:
 scrapyd-deploy default 
-scrapyd 
+
+### 启动scrapydweb
+terminal 1:
+redis-cli --启动redis
+
+terminal 2:
+scrapyd --启动scrapyd
 
 terminal 3:
-redis-cli
+scrapydweb -p 5001 
 
 ### 项目目录结构
 

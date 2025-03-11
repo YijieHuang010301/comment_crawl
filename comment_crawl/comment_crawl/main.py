@@ -7,7 +7,8 @@ from fastapi.responses import JSONResponse
 
 from fastapi.responses import HTMLResponse
 
-from comment_crawl.common.const import WAYFAIR_PLATFORM_ID, HOMEDEPOT_PLATFORM_ID
+from build.lib.comment_crawl.common.const import AMAZON_PLATFORM_ID
+from comment_crawl.common.const import WAYFAIR_PLATFORM_ID, HOMEDEPOT_PLATFORM_ID, LOWES_PLATFORM_ID
 from comment_crawl.util.crawl_util.push_to_redis import push_urls_to_redis_by_platform
 from comment_crawl.util.process_input import InputProcessor
 
@@ -100,9 +101,11 @@ if __name__ == '__main__':
     # process_file_test("downloads/files/homedepot_test.xlsx")
     # process_file_test("downloads/files/amazon_test.xlsx")
     # process_file_test("downloads/files/walmart_test.xlsx")
-
     # push_urls_to_redis_by_platform(WAYFAIR_PLATFORM_ID)
     # push_urls_to_redis_by_platform(HOMEDEPOT_PLATFORM_ID)
+    # push_urls_to_redis_by_platform(AMAZON_PLATFORM_ID)
+    push_urls_to_redis_by_platform(LOWES_PLATFORM_ID)
+
     pass
     # 定时任务：每天一次
     #schedule.every().days.do(push_urls_to_redis)

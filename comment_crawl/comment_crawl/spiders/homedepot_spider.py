@@ -34,10 +34,18 @@ class HomeDepotSpider(BaseSpider):
             body=json.dumps(payload),  # 使用 body 传递 JSON 数据
             callback=self.parse,  # 回调函数处理响应
             meta={'product_id': product_id, 'uuid': uuid, 'is_first_time': is_first_time},  # 将 product_id 传递给下一个方法
-            dont_filter=True
+            dont_filter=True,
+            errback=self.handle_error
         )
 
-    def parse_response_data(self, response_data, uuid, product_id, is_first_time):
+    def parse_response_data(self, response, uuid, product_id, is_first_time):
+        #解析json
+        try:
+            response_data = json.loads(response.text)  # 确保解析 JSON
+        except json.JSONDecodeError as e:
+            print(f"Error parsing JSON response for product ID {product_id}: {str(e)}")
+            return
+
         # 如果product不存在了
         if response_data["data"]["reviews"]["Includes"]["Products"] is None:
             self.set_isDelete(uuid)
@@ -123,6 +131,7 @@ class HomeDepotSpider(BaseSpider):
         # 不存在的字段: 暂时没有product_options和language code
         loader.add_value('language_code', review.get('LanguageCode', ''))
         loader.add_value('product_options', '')
+        return True
 
 
 

@@ -7,12 +7,12 @@ from comment_crawl.spiders.myspider import BaseSpider
 from comment_crawl.util.crawl_util.push_to_redis import push_retry_url_to_redis
 
 
-class WalmartSpider(BaseSpider):
+class LowesSpider(BaseSpider):
     name = 'lowes_spider'
     redis_key = 'lowes_spider:urls'
 
     def __init__(self, *args, **kwargs):
-        super(WalmartSpider, self).__init__(*args, **kwargs)
+        super(LowesSpider, self).__init__(*args, **kwargs)
         self.platform_id = LOWES_PLATFORM_ID
 
     def make_request_from_data(self, data):

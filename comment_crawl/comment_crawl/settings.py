@@ -108,7 +108,7 @@ SCHEDULER_PERSIST = True
 
 
 # 设置并发请求数
-CONCURRENT_REQUESTS = 1
+CONCURRENT_REQUESTS = 8
 
 # 禁用Scrapy的内置去重机制，启用scrapy-redis的去重机制
 DUPEFILTER_DEBUG = True

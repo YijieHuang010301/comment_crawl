@@ -179,7 +179,7 @@ class BaseSpider(RedisSpider):
         # 保存到数据库
 
         if len(parsed_reviews) != 0:
-            self.write_to_log(parsed_reviews, product_id, -1)
+            # self.write_to_log(parsed_reviews, product_id, -1)
             rows, error = execute_sql(insert_reviews_sql, DB_UPDATE, params=parsed_reviews)
             if error:
                 print(f"Error occurred: {error}")

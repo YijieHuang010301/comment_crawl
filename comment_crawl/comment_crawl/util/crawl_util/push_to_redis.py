@@ -17,7 +17,7 @@ class HeaderFactory:
             return HeaderFactory.build_walmart_header(product_id, uuid)
         elif platform_id == OVERSTOCK_PLATFORM_ID or platform_id == BEDBATHANDBEYOND_PLATFORM_ID:
             # 共享构建方法
-            return HeaderFactory.build_overstock_bedbathandbeyond_header(product_id, uuid)
+            return HeaderFactory.build_overstock_bedbathandbeyond_header(product_id, uuid, is_first_time, start_idx, total_reviews)
         elif platform_id == LOWES_PLATFORM_ID:
             return HeaderFactory.build_lowes_header(product_id, uuid, is_first_time, start_idx)
         else:
@@ -163,13 +163,60 @@ class HeaderFactory:
         return json.dumps(data)
 
     @staticmethod
-    def build_overstock_bedbathandbeyond_header(product_id, uuid):
+    def build_overstock_bedbathandbeyond_header(product_id, uuid, is_first_time, page_num, total_reviews):
         # TODO: 实现Overstock和BedBath&Beyond的header构建逻辑
-        pass
+        url = "https://api.overstock.com/reviews"
+        headers = {
+            'accept': 'application/json',
+            'accept-encoding': 'gzip, deflate, br',
+            'accept-language': 'zh-CN,zh;q=0.9',
+            'cache-control': 'no-cache',
+            'content-type': 'application/json',
+            'origin': 'https://www.overstock.com',
+            'pragma': 'no-cache',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-site': 'same-site',
+            'user-agent': get_fake_user_agent()
+        }
+        if is_first_time:
+            next_page_num = 0
+        else:
+            next_page_num = page_num
+        params = {
+            'productId': product_id,  # 商品id
+            'page': next_page_num,  # 页码
+            'sortBy': 'recentReview',  # 时间倒序排列
+            'limit': total_reviews,  # 每页数量
+        }
+        url += f"?productId={params['productId']}&page={params['page']}&sortBy={params['sortBy']}&limit={params['limit']}"
+        data = {
+            'url': url,
+            'product_id': product_id,
+            'uuid': uuid,
+            'headers': headers,
+            'is_first_time': is_first_time,
+        }
+
+        return json.dumps(data)
 
     @staticmethod
     def build_walmart_header(product_id, uuid):
         # TODO: 实现walmart的header构建逻辑
+        url = "https://api.overstock.com/reviews"
+        headers = {
+            'accept': 'application/json',
+            'accept-encoding': 'gzip, deflate, br',
+            'accept-language': 'zh-CN,zh;q=0.9',
+            'cache-control': 'no-cache',
+            'content-type': 'application/json',
+            'origin': 'https://www.overstock.com',
+            'pragma': 'no-cache',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-site': 'same-site',
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36'
+        }
         pass
 
 def push_urls_to_redis_by_platform(platform_id):

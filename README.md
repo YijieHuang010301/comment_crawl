@@ -29,6 +29,7 @@ comment_crawl/        # 爬虫包
 │   ├── homedepot_spider.py   # homedepot 爬虫
 │   ├── wayfair_spider.py     # wayfair 爬虫
 │   ├── lowes_spider.py       # lowe's 爬虫
+│   ├── overstock_spider.py       # overstock/bedbathandbeyond 爬虫
 │   ├── amazon_spider.py       # amazon 爬虫*(未启用)
 │   └── walmart_spider.py       # walmart 爬虫*(未完成)
 ├── templates/        # 简单前端（未启用）

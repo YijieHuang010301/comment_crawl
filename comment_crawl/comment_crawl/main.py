@@ -97,17 +97,24 @@ if __name__ == '__main__':
 
     # uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
     # process_file_test("downloads/files/wf_test.xlsx")
-    # process_file_test("downloads/files/Lowes_test.xlsx")
-    # process_file_test("downloads/files/overstock_test.xlsx")
-    # process_file_test("downloads/files/homedepot_test.xlsx")
-    # process_file_test("downloads/files/overstock_test_multiple_reviews.xlsx")
-    # process_file_test("downloads/files/amazon_test.xlsx")
-    # process_file_test("downloads/files/walmart_test.xlsx")
     # push_urls_to_redis_by_platform(WAYFAIR_PLATFORM_ID)
-    # push_urls_to_redis_by_platform(HOMEDEPOT_PLATFORM_ID)
-    # push_urls_to_redis_by_platform(AMAZON_PLATFORM_ID)
+
+    # process_file_test("downloads/files/Lowes_test.xlsx")
     # push_urls_to_redis_by_platform(LOWES_PLATFORM_ID)
+
+    # process_file_test("downloads/files/overstock_test.xlsx")
     # push_urls_to_redis_by_platform(OVERSTOCK_PLATFORM_ID)
+
+    process_file_test("downloads/files/homedepot_test.xlsx")
+    push_urls_to_redis_by_platform(HOMEDEPOT_PLATFORM_ID)
+
+    # TODO：尚未使用
+    # process_file_test("downloads/files/amazon_test.xlsx")
+    # push_urls_to_redis_by_platform(AMAZON_PLATFORM_ID)
+
+    # process_file_test("downloads/files/walmart_test.xlsx")
+
+
 
     pass
     # 定时任务：每天一次

@@ -1,4 +1,11 @@
+
 import json
+import random
+
+import hashlib
+import time
+
+from random import random
 
 from comment_crawl.common.const import *
 from comment_crawl.spiders.myspider import get_fake_mobile_user_agent, get_fake_user_agent
@@ -203,20 +210,26 @@ class HeaderFactory:
     @staticmethod
     def build_walmart_header(product_id, uuid):
         # TODO: 实现walmart的header构建逻辑
-        url = "https://api.overstock.com/reviews"
+        def md5_encrypt(self, string):
+            '''
+            'md5', 'sha1', 'sha224', 'sha256', 'sha384', 'sha512',
+            'blake2b', 'blake2s',
+            'sha3_224', 'sha3_256', 'sha3_384', 'sha3_512',
+            'shake_128', 'shake_256'
+            '''
+            md5 = hashlib.md5()
+            md5.update(string.encode('utf-8'))
+            return md5.hexdigest()
+
         headers = {
-            'accept': 'application/json',
-            'accept-encoding': 'gzip, deflate, br',
-            'accept-language': 'zh-CN,zh;q=0.9',
-            'cache-control': 'no-cache',
-            'content-type': 'application/json',
-            'origin': 'https://www.overstock.com',
-            'pragma': 'no-cache',
-            'sec-fetch-dest': 'empty',
-            'sec-fetch-mode': 'cors',
-            'sec-fetch-site': 'same-site',
-            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36'
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+            "Accept-Language": "zh-CN,zh;q=0.9",
+            f"F{md5_encrypt(str(time.time()))[:5]}": f"{md5_encrypt(str(random.randint(1, 10000)))}",
+            "Sec-Ch-Ua": f"\"Not A(Brand\";v=\"{random.randint(70, 99)}\", \"Brave\";v=\"{random.randint(70, 120)}\", \"Chromium\";v=\"{random.randint(70, 120)}\"",
+            "User-Agent": f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/{random.randint(512, 538)}.{random.randint(9, 37)} (KHTML, like Gecko) Chrome/{random.randint(100, 121)}.0.0.0 Safari/{random.randint(512, 538)}.{random.randint(9, 37)}",
         }
+
+
         pass
 
 def push_urls_to_redis_by_platform(platform_id):

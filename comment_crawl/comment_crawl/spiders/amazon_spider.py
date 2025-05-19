@@ -99,7 +99,7 @@ class AmazonSpider(BaseSpider):
         except json.JSONDecodeError as e:
             print(f"Error parsing HTML response for product ID {product_id}: {str(e)}")
             return
-        self.write_to_log(response.text, product_id, self.platform_id)
+        # self.write_to_log(response.text, product_id, self.platform_id)
 
         # 储存rating的信息
         if is_first_time:

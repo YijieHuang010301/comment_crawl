@@ -36,8 +36,7 @@ class OverstockSpider(BaseSpider):
         )
 
     def parse_response_data(self, response, uuid, product_id, is_first_time):
-        # print(response.text)
-        # print()
+
         try:
             response_data = json.loads(response.text)  # 确保解析 JSON
         except json.JSONDecodeError as e:

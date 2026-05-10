@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Comment Crawl Demo</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Portfolio demo</p>
+          <h1>Comment Crawl</h1>
+          <p class="lede">
+            A multi-platform product review crawling pipeline that turns Excel
+            product links into Redis-dispatched Scrapy jobs and normalized
+            review records.
+          </p>
+          <div class="tech-stack" aria-label="Technology stack">
+            <span>Python</span>
+            <span>Scrapy</span>
+            <span>Scrapy-Redis</span>
+            <span>FastAPI</span>
+            <span>Redis</span>
+            <span>MySQL</span>
+          </div>
+        </div>
+        <div class="hero-metrics" aria-label="Project summary">
+          <div>
+            <strong>6</strong>
+            <span>Platforms</span>
+          </div>
+          <div>
+            <strong>2</strong>
+            <span>Core tables</span>
+          </div>
+          <div>
+            <strong>100</strong>
+            <span>Reviews/page</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="architecture" aria-labelledby="architecture-title">
+        <div class="section-heading">
+          <p class="eyebrow">System flow</p>
+          <h2 id="architecture-title">From product links to structured reviews</h2>
+        </div>
+        <div class="flow-grid">
+          <div class="flow-node">
+            <span>01</span>
+            <strong>Excel Upload</strong>
+            <p>Batch product URLs and SKUs enter through a FastAPI endpoint.</p>
+          </div>
+          <div class="flow-node">
+            <span>02</span>
+            <strong>URL Parser</strong>
+            <p>Platform and product IDs are detected from each marketplace URL.</p>
+          </div>
+          <div class="flow-node">
+            <span>03</span>
+            <strong>Product Store</strong>
+            <p>Product metadata is upserted into the all_products table.</p>
+          </div>
+          <div class="flow-node">
+            <span>04</span>
+            <strong>Redis Queue</strong>
+            <p>Platform-specific request payloads are pushed into spider queues.</p>
+          </div>
+          <div class="flow-node">
+            <span>05</span>
+            <strong>Scrapy Spiders</strong>
+            <p>GraphQL, REST, and HTML responses are parsed by platform spiders.</p>
+          </div>
+          <div class="flow-node">
+            <span>06</span>
+            <strong>Review Store</strong>
+            <p>Ratings and comments land in normalized MySQL review tables.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="demo-panel" aria-labelledby="demo-title">
+        <div class="section-heading">
+          <p class="eyebrow">Interactive walkthrough</p>
+          <h2 id="demo-title">Simulate a crawl job</h2>
+        </div>
+
+        <div class="workspace">
+          <aside class="control-panel">
+            <label for="platform">Platform</label>
+            <select id="platform">
+              <option value="wayfair">Wayfair</option>
+              <option value="homedepot">HomeDepot</option>
+              <option value="lowes">Lowes</option>
+              <option value="overstock">Overstock</option>
+            </select>
+
+            <label for="product-url">Product URL</label>
+            <textarea id="product-url" rows="6"></textarea>
+
+            <button id="simulate-btn" type="button">Simulate Crawl</button>
+          </aside>
+
+          <div class="results">
+            <div class="status-strip" aria-label="Pipeline status">
+              <span class="active">Queued</span>
+              <span>Fetching</span>
+              <span>Parsing</span>
+              <span>Saved</span>
+            </div>
+
+            <div class="result-grid">
+              <section class="output-box">
+                <h3>Parsed Product</h3>
+                <dl id="parsed-output"></dl>
+              </section>
+
+              <section class="output-box">
+                <h3>Redis Payload</h3>
+                <pre id="payload-output"></pre>
+              </section>
+
+              <section class="output-box wide">
+                <h3>Rating Distribution</h3>
+                <div id="rating-chart" class="rating-chart"></div>
+              </section>
+
+              <section class="output-box wide">
+                <h3>Normalized Reviews</h3>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Reviewer</th>
+                        <th>Rating</th>
+                        <th>Date</th>
+                        <th>Verified</th>
+                        <th>Title</th>
+                      </tr>
+                    </thead>
+                    <tbody id="review-table"></tbody>
+                  </table>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="details">
+        <div class="section-heading">
+          <p class="eyebrow">Engineering notes</p>
+          <h2>What this demo represents</h2>
+        </div>
+        <div class="notes-grid">
+          <article>
+            <h3>Reusable crawler core</h3>
+            <p>
+              Platform spiders share persistence and rating logic through a base
+              spider while keeping request construction and response parsing
+              platform-specific.
+            </p>
+          </article>
+          <article>
+            <h3>Queue-based execution</h3>
+            <p>
+              Product ingestion is separated from crawling through Redis queues,
+              so jobs can be retried, paginated, and consumed by dedicated
+              spiders.
+            </p>
+          </article>
+          <article>
+            <h3>Schema normalization</h3>
+            <p>
+              Different marketplace review shapes are transformed into shared
+              product_reviews fields for downstream analysis.
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

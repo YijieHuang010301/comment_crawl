@@ -46,13 +46,43 @@ class HomeDepotSpider(BaseSpider):
             print(f"Error parsing JSON response for product ID {product_id}: {str(e)}")
             return
 
+        # 检查响应结构，API 可能返回 errors 或结构变更
+        data = response_data.get("data")
+        if not data:
+            errors = response_data.get("errors", [])
+            self.logger.warning(f"Product {product_id}: API returned no data. errors={errors[:1] if errors else 'unknown'}")
+            return
+
+        reviews_data = data.get("reviews")
+        if not reviews_data:
+            self.logger.warning(f"Product {product_id}: No 'reviews' in response. data keys={list(data.keys())}")
+            return
+
         # 如果product不存在了
-        if response_data["data"]["reviews"]["Includes"]["Products"] is None:
+        includes = reviews_data.get("Includes") or {}
+        products = includes.get("Products")
+        if products is None:
             self.set_isDelete(uuid)
             return
 
-        customer_reviews_stats = response_data["data"]["reviews"]["Includes"]["Products"]["store"]["FilteredReviewStatistics"]
-        total_results = response_data["data"]["reviews"]["TotalResults"]
+        # Products 可能是列表（GraphQL 返回数组时取第一个）
+        if isinstance(products, list):
+            products = products[0] if products else None
+        if not products:
+            self.set_isDelete(uuid)
+            return
+
+        store = products.get("store")
+        if not store:
+            self.logger.warning(f"Product {product_id}: No store data in Products")
+            return
+
+        customer_reviews_stats = store.get("FilteredReviewStatistics")
+        if not customer_reviews_stats:
+            self.logger.warning(f"Product {product_id}: No FilteredReviewStatistics")
+            return
+
+        total_results = reviews_data.get("TotalResults", 0)
         if is_first_time:
             self.save_rating_info(product_id, uuid, customer_reviews_stats)
 
@@ -61,8 +91,9 @@ class HomeDepotSpider(BaseSpider):
                 push_retry_url_to_redis(self.platform_id, product_id, uuid, start_idx, MAX_REVIEWS)
         else:
             if total_results > 0:
-                reviews = response_data["data"]["reviews"]["Results"]
-                self.save_reviews(product_id, reviews)
+                reviews = reviews_data.get("Results", [])
+                if reviews:
+                    self.save_reviews(product_id, reviews)
 
 
 

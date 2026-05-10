@@ -121,7 +121,10 @@ def execute_sql(sql, sql_type, params=None):
     try:
         # 使用数据库连接
         with connection.begin():
-            result_proxy = connection.execute(sql, params)
+            if params is not None:
+                result_proxy = connection.execute(sql, params)
+            else:
+                result_proxy = connection.execute(sql)
             if sql_type == DB_SELECT:
                 result = result_proxy.fetchall()
             elif sql_type == DB_UPDATE or sql_type == DB_DELETE or sql_type == DB_INSERT:
